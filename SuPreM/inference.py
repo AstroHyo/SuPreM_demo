@@ -89,29 +89,32 @@ def validation(model, ValLoader, val_transforms, args):
         if args.store_result:
             if not os.path.isdir(organ_seg_save_path):
                 os.makedirs(organ_seg_save_path)
-            organ_index_all = TEMPLATE['target']
-            for organ_index in organ_index_all:
-                pseudo_label_single = pseudo_label_single_organ(pred_hard_post,organ_index,args)
+            # Process organs selectively
+            # organ_index_all = TEMPLATE['target']
+            for organ_index in args.organ_indices:
+                print(f'Processing organ {organ_index}')
+                pseudo_label_single = pseudo_label_single_organ(pred_hard_post, organ_index, args)
                 organ_name = ORGAN_NAME_LOW[organ_index-1]
                 batch[organ_name]=pseudo_label_single.cpu()
-                BATCH = invert_transform(organ_name,batch,val_transforms)
-                organ_invertd = np.squeeze(BATCH[0][organ_name].numpy(),axis = 0)
-                organ_save = nib.Nifti1Image(organ_invertd,affine_temp)
-                new_name = os.path.join(organ_seg_save_path, organ_name+'.nii.gz')
+                BATCH = invert_transform(organ_name, batch, val_transforms)
+                organ_invertd = np.squeeze(BATCH[0][organ_name].numpy(), axis = 0)
+                organ_save = nib.Nifti1Image(organ_invertd, affine_temp)
+                new_name = os.path.join(organ_seg_save_path, organ_name + '.nii.gz')
+                nib.save(organ_save, new_name)
                 print('organ seg saved in path: %s'%(new_name))
-                nib.save(organ_save,new_name)
-                
-            pseudo_label_all = pseudo_label_all_organ(pred_hard_post,args)
-            batch['pseudo_label'] = pseudo_label_all.cpu()
-            BATCH = invert_transform('pseudo_label',batch,val_transforms)
-            pseudo_label_invertd = np.squeeze(BATCH[0]['pseudo_label'].numpy(),axis = 0)
-            pseudo_label_save = nib.Nifti1Image(pseudo_label_invertd,affine_temp)
-            new_name = os.path.join(case_save_path, 'combined_labels.nii.gz')
-            nib.save(pseudo_label_save,new_name)
-            print('pseudo label saved in path: %s'%(new_name))
+            # Process the combined result under the condition
+            if args.include_combined:
+                print('Processing combined labels')
+                pseudo_label_all = pseudo_label_all_organ(pred_hard_post, args)
+                batch['pseudo_label'] = pseudo_label_all.cpu()
+                BATCH = invert_transform('pseudo_label', batch, val_transforms)
+                pseudo_label_invertd = np.squeeze(BATCH[0]['pseudo_label'].numpy(), axis = 0)
+                pseudo_label_save = nib.Nifti1Image(pseudo_label_invertd, affine_temp)
+                new_name = os.path.join(case_save_path, 'combined_labels.nii.gz')
+                nib.save(pseudo_label_save, new_name)
+                print('pseudo label saved in path: %s'%(new_name))
             
         torch.cuda.empty_cache()
-
 
 # AttrDict part ?
 
