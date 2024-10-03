@@ -116,88 +116,146 @@ def validation(model, ValLoader, val_transforms, args):
             
         torch.cuda.empty_cache()
 
-# AttrDict part ?
+### AttrDict part ?
+class AttrDict(dict):
+  def __getattr__(self, name):
+    try:
+      return self[name]
+    except KeyError:
+      raise AttributeError(f"'AttrDict' object has no attribute '{name}'")
+  
+  def __setattr__(self, name, value):
+    self[name] = value
+  
+  def __delattr__(self, name):
+    try:
+      del self[name]
+    except KeyError:
+      raise AttributeError(f"'AttrDict' object has no attribute '{name}'")
 
+print("Model loaded.")
 
-# Handler part: Get the input from url, inference, and return the result in base64 format
+ORGAN_NAME_TO_INDEX = {}
+for organ_index in TEMPLATE['target']:
+  organ_name = ORGAN_NAME_LOW[organ_index - 1]
+  ORGAN_NAME_TO_INDEX[organ_name] = organ_index
 
+### Handler part: Using Runpod serverless to get the input from url, inference, and return the result in base64 format
+import runpod
+import tempfile
+import requests
+import base64
+import glob
 
+def handler(job):
+    # Get the 'input' data from job (https://docs.runpod.io/serverless/endpoints/send-requests)
+    job_input = job['input']
+    # Get the file url from input
+    url = job_input.get('url')
 
+    # Create temporary directory to store input, sample, and output data
+    workdir = tempfile.TemporaryDirectory()
 
+    input_dir = os.path.join(workdir.name, 'inputs')
+    sample_dir = os.path.join(input_dir, 'sample')
+    os.makedirs(sample_dir, exist_ok=True)
 
-def main():
-    parser = argparse.ArgumentParser()
-    ## for distributed training
-    parser.add_argument('--dist', dest='dist', type=bool, default=False,
-                        help='distributed training or not')
-    parser.add_argument("--local_rank", type=int)
-    parser.add_argument("--device")
-    parser.add_argument("--epoch", default=0,type = int)
-    ## logging
-    parser.add_argument('--save_dir', default='/workspace/outputs', help='The dataset save path')
-    ## model load
-    parser.add_argument('--resume', default='./pretrained_checkpoints/supervised_suprem_unet_2100.pth', help='The path resume from checkpoint')
-    parser.add_argument('--pretrain', default='...', 
-                        help='The path of pretrain model')
-    ## hyperparameter
-    parser.add_argument('--max_epoch', default=1000, type=int, help='Number of training epoches')
-    parser.add_argument('--store_num', default=10, type=int, help='Store model how often')
-    parser.add_argument('--lr', default=1e-4, type=float, help='Learning rate')
-    parser.add_argument('--weight_decay', default=1e-5, type=float, help='Weight Decay')
+    output_dir = os.path.join(workdir.name, 'outputs')
+    os.makedirs(output_dir, exist_ok=True)
 
-    ## dataset
-    parser.add_argument('--data_root_path', default='/workspace/inputs', help='data root path')
-    parser.add_argument('--batch_size', default=1, type=int, help='batch size')
-    parser.add_argument('--num_workers', default=8, type=int, help='workers numebr for DataLoader')
-    parser.add_argument('--a_min', default=-175, type=float, help='a_min in ScaleIntensityRanged')
-    parser.add_argument('--a_max', default=250, type=float, help='a_max in ScaleIntensityRanged')
-    parser.add_argument('--b_min', default=0.0, type=float, help='b_min in ScaleIntensityRanged')
-    parser.add_argument('--b_max', default=1.0, type=float, help='b_max in ScaleIntensityRanged')
-    parser.add_argument('--space_x', default=1.5, type=float, help='spacing in x direction')
-    parser.add_argument('--space_y', default=1.5, type=float, help='spacing in y direction')
-    parser.add_argument('--space_z', default=1.5, type=float, help='spacing in z direction')
-    parser.add_argument('--roi_x', default=96, type=int, help='roi size in x direction')
-    parser.add_argument('--roi_y', default=96, type=int, help='roi size in y direction')
-    parser.add_argument('--roi_z', default=96, type=int, help='roi size in z direction')
-    parser.add_argument('--num_samples', default=1, type=int, help='sample number in each ct')
+    # Get the target variables from input
+    targets = job_input.get('targets', [])
+    # Check include_combined
+    if 'all' in targets:
+        include_combined = True;
+    else: 
+        include_combined = False;
+    # Get organ_indices from target variables
+    organ_indices = []
+    for target in targets:
+        if target not in ORGAN_NAME_TO_INDEX:
+            raise ValueError(f'Invalid target: {target}')
+        if target in ORGAN_NAME_TO_INDEX:
+            organ_indices.append(ORGAN_NAME_TO_INDEX[target])
+    if not organ_indices and not include_combined:
+        raise ValueError('No targets specified')
+    
+    # Set optional parameters
+    space_x = float(job_input.get('space_x', 1.5))
+    space_y = float(job_input.get('space_y', 1.5))
+    space_z = float(job_input.get('space_z', 1.5))
+    
+    a_min = float(job_input.get('a_min', -175))
+    a_max = float(job_input.get('a_max', 250))
+    b_min = float(job_input.get('b_min', 0.0))
+    b_max = float(job_input.get('b_max', 1.0))
+    
+    roi_x = int(job_input.get('roi_x', 96))
+    roi_y = int(job_input.get('roi_y', 96))
+    roi_z = int(job_input.get('roi_z', 96))
 
-    parser.add_argument('--phase', default='test', help='train or validation or test')
-    parser.add_argument('--original_label',action="store_true",default=False,help='whether dataset has original label')
-    parser.add_argument('--cache_dataset', action="store_true", default=False, help='whether use cache dataset')
-    parser.add_argument('--store_result', action="store_true", default=False, help='whether save prediction result')
-    parser.add_argument('--cache_rate', default=0.6, type=float, help='The percentage of cached data in total')
-    parser.add_argument('--cpu',action="store_true", default=False, help='The entire inference process is performed on the GPU ')
-    parser.add_argument('--threshold_organ', default='Pancreas Tumor')
-    parser.add_argument('--threshold', default=0.6, type=float)
-    parser.add_argument('--backbone', default='unet', help='backbone [swinunetr or unet]')
-    parser.add_argument('--create_dataset',action="store_true", default=False)
+    num_samples = int(job_input.get('num_samples', 1))
 
-    args = parser.parse_args()
+    print(f'Downloading {url} to {sample_dir}')
+    # Download the file using streaming method HTTP reqeust 
+    response = requests.get(url, headers={
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
+    }, stream=True)
+    # If failed to download, raise error
+    if response.status_code != 200:
+        raise ValueError(f'Failed to download {url}: {response.status_code}')
+    # Open the file in binary mode(wb) and save it at 'sample_dir'  
+    with open(os.path.join(sample_dir, 'ct.nii.gz'), 'wb') as f:
+        for chunk in response.iter_content(chunk_size=128):
+            if chunk:
+                f.write(chunk)
+    print(f'Downloaded {url} to {sample_dir}')
 
-    # prepare the 3D model
- 
-    model = Universal_model(img_size=(args.roi_x, args.roi_y, args.roi_z),
-                    in_channels=1,
-                    out_channels=NUM_CLASS,
-                    backbone=args.backbone,
-                    encoding='word_embedding'
-                    )
-    #Load pre-trained weights
-    store_dict = model.state_dict()
-    store_dict_keys = [key for key, value in store_dict.items()]
-    checkpoint = torch.load(args.resume)
-    load_dict = checkpoint['net']
-    load_dict_value = [value for key, value in load_dict.items()]
+    # Set data loader
+    test_loader, val_transformers = get_loader(AttrDict({
+        'space_x': space_x,
+        'space_y': space_y,
+        'space_z': space_z,
+        'a_min': a_min,
+        'a_max': a_max,
+        'b_min': b_min,
+        'b_max': b_max,
+        'roi_x': roi_x,
+        'roi_y': roi_y,
+        'roi_z': roi_z,
+        'num_samples': num_samples,
+        'data_root_path': input_dir,
+        'original_label': False,
+        'cache_dataset': False,
+        'phase': 'test',
+    }))
+    
+    # Start data inference and save the results at 'outputs'
+    validation(model, test_loader, val_transformers, AttrDict({
+        'save_dir': output_dir,
+        'data_root_path': input_dir,
+        'roi_x': roi_x,
+        'roi_y': roi_y,
+        'roi_z': roi_z,
+        'store_result': True,
+        'create_dataset': False,
+        'cpu': False,
+        'backbone': backbone,
+        'organ_indices': organ_indices,
+        'include_combined': include_combined,
+    }))
 
-    for i in range(len(store_dict)):
-        store_dict[store_dict_keys[i]] = load_dict_value[i]
-        
-    model.load_state_dict(store_dict)
-    print('Use pretrained weights')
-    model.cuda()
-    torch.backends.cudnn.benchmark = True
-    test_loader, val_transforms = get_loader(args)
-    validation(model, test_loader, val_transforms, args)
+    # Save key(file name)-value(base64 encoded content) in result dictionary 
+    result = {}
+    # Find .nii.gz files, encode in base64, and decode in ascii
+    for name in glob.glob(os.path.join(output_dir, 'sample', '*.nii.gz')):
+        result[os.path.basename(name)] = base64.b64encode(open(name, 'rb').read()).decode('ascii')
+    
+    for name in glob.glob(os.path.join(output_dir, 'sample/segmentations', '*.nii.gz')):
+        result[os.path.basename(name)] = base64.b64encode(open(name, 'rb').read()).decode('ascii')
 
-if __name__ == "__main__":
-    main()
+    workdir.cleanup()
+    
+    return result
+
+    runpod.serverless.start({"handler": handler})
