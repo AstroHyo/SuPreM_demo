@@ -24,11 +24,11 @@ checkpoint_name = os.environ.get('CHECKPOINT', 'supervised_suprem_unet_2100')
 
 # Load model
 model = Universal_model(
-  img_size=(96, 96, 96),
-  in_channels=1,
-  out_channels=NUM_CLASS,
-  backbone=backbone,
-  encoding='word_embedding',
+    img_size=(96, 96, 96),
+    in_channels=1,
+    out_channels=NUM_CLASS,
+    backbone=backbone,
+    encoding='word_embedding',
 )
 
 # Load checkpoint
@@ -40,8 +40,8 @@ loaded_dict = { key.removeprefix('module.'): value for key, value in checkpoint[
 
 # Compare both of them have same key set
 for key in loaded_dict.keys():
-  if key not in allowed_keys:
-    raise ValueError(f'Key {key} is not allowed in the model.')
+    if key not in allowed_keys:
+        raise ValueError(f'Key {key} is not allowed in the model.')
 
 # Put the checkpoint weighted values into the model, and send it to GPU
 model.load_state_dict(loaded_dict)
@@ -118,27 +118,27 @@ def validation(model, ValLoader, val_transforms, args):
 
 ### AttrDict part ?
 class AttrDict(dict):
-  def __getattr__(self, name):
-    try:
-      return self[name]
-    except KeyError:
-      raise AttributeError(f"'AttrDict' object has no attribute '{name}'")
-  
-  def __setattr__(self, name, value):
-    self[name] = value
-  
-  def __delattr__(self, name):
-    try:
-      del self[name]
-    except KeyError:
-      raise AttributeError(f"'AttrDict' object has no attribute '{name}'")
+    def __getattr__(self, name):
+        try:
+            return self[name]
+        except KeyError:
+            raise AttributeError(f"'AttrDict' object has no attribute '{name}'")
+    
+    def __setattr__(self, name, value):
+        self[name] = value
+    
+    def __delattr__(self, name):
+        try:
+            del self[name]
+        except KeyError:
+            raise AttributeError(f"'AttrDict' object has no attribute '{name}'")
 
 print("Model loaded.")
 
 ORGAN_NAME_TO_INDEX = {}
 for organ_index in TEMPLATE['target']:
-  organ_name = ORGAN_NAME_LOW[organ_index - 1]
-  ORGAN_NAME_TO_INDEX[organ_name] = organ_index
+    organ_name = ORGAN_NAME_LOW[organ_index - 1]
+    ORGAN_NAME_TO_INDEX[organ_name] = organ_index
 
 ### Handler part: Using Runpod serverless to get the input from url, inference, and return the result in base64 format
 import runpod
@@ -199,8 +199,7 @@ def handler(job):
     print(f'Downloading {url} to {sample_dir}')
     # Download the file using streaming method HTTP reqeust 
     response = requests.get(url, headers={
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
-    }, stream=True)
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',}, stream=True)
     # If failed to download, raise error
     if response.status_code != 200:
         raise ValueError(f'Failed to download {url}: {response.status_code}')
@@ -258,4 +257,4 @@ def handler(job):
     
     return result
 
-    runpod.serverless.start({"handler": handler})
+runpod.serverless.start({"handler": handler})
