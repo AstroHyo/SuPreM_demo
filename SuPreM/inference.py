@@ -48,15 +48,6 @@ model.load_state_dict(loaded_dict)
 model.cuda()
 
 ### Validation part
-
-
-# AttrDict part ?
-
-
-# Handler part: Get the input from url, inference, and return the result in base64 format
-
-
-
 def validation(model, ValLoader, val_transforms, args):
     save_dir = args.save_dir
     if not os.path.isdir(save_dir):
@@ -120,6 +111,15 @@ def validation(model, ValLoader, val_transforms, args):
             print('pseudo label saved in path: %s'%(new_name))
             
         torch.cuda.empty_cache()
+
+
+# AttrDict part ?
+
+
+# Handler part: Get the input from url, inference, and return the result in base64 format
+
+
+
 
 
 def main():
