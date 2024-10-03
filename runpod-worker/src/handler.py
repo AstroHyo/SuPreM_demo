@@ -199,7 +199,7 @@ def handler(job):
     print(f'Downloading {url} to {sample_dir}')
     # Download the file using streaming method HTTP reqeust 
     response = requests.get(url, headers={
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',}, stream=True)
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',}, stream=True)
     # If failed to download, raise error
     if response.status_code != 200:
         raise ValueError(f'Failed to download {url}: {response.status_code}')
