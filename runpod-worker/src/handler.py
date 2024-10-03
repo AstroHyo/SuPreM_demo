@@ -173,7 +173,7 @@ def handler(job):
     # Get organ_indices from target variables
     organ_indices = []
     for target in targets:
-        if target not in ORGAN_NAME_TO_INDEX:
+        if target not in ORGAN_NAME_TO_INDEX and target != 'all':
             raise ValueError(f'Invalid target: {target}')
         if target in ORGAN_NAME_TO_INDEX:
             organ_indices.append(ORGAN_NAME_TO_INDEX[target])
