@@ -240,18 +240,6 @@ export default function CTImageProcessor() {
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={isProcessing}
-              required
-            />
-          </div>
-
           <Button type="submit" className="w-full" disabled={isProcessing}>
             {isProcessing ? 'Processing...' : 'Submit'}
           </Button>
