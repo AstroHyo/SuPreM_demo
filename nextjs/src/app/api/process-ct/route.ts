@@ -55,6 +55,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    /**
+     * const json = await fetch(...).then(r => r.json());
+     * => 서버가 뭐라 응답하는지 관심 없고, JSON으로 그냥 만들어서 줘
+     * => 서버가 JSON이 아니게 응답하면 터짐
+     *
+     * const str = await fetch(...).then(r => r.text());
+     * console.log(str);
+     * const json = JSON.parse(str);
+     * => 서버가 뭐라 응답하든지 아무것도 하지말고 그냥 그 텍스트 그대로 줘
+     * => 그담에 그 텍스트를 그대로 로그를 찍고
+     * => 그리고 JSON으로 parse 해봐
+     */
+
     const response = await fetch(`${process.env.RUNPOD_ENDPOINT}/runsync`, {
       method: 'POST',
       headers: {
@@ -68,7 +81,7 @@ export async function POST(request: NextRequest) {
           targets: JSON.parse(selectedTargets),
         },
       }),
-    })
+    }).then((r) => r.json());
 
     const text = await response.text();
     console.log('runpod responded:', text);
