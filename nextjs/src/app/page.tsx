@@ -118,8 +118,8 @@ export default function CTImageProcessor() {
     const formData = new FormData();
     formData.append('file', newBlob.url);
     //formData.append('password', password);
-    formData.append('selectedTargets', JSON.stringify(selectedTargets));
     formData.append('params', JSON.stringify(params));
+    formData.append('selectedTargets', JSON.stringify(selectedTargets));
 
     try {
       const response = await fetch('/api/process-ct', {
