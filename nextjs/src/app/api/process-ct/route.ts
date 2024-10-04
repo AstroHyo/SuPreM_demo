@@ -62,6 +62,9 @@ export async function POST(request: NextRequest) {
       }),
     }).then((r) => r.json());
 
+    console.log('res:', res);
+    console.log('params:', params);
+
     if (res.error) {
       throw new Error(
         'An error occurred while processing the image: ' + res.error
