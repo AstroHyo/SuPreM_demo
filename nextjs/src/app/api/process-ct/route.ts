@@ -25,17 +25,16 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get('file') as string;
-    const selectedTargetsRaw = formData.get('selectedTargets') as string;
+    const selectedTargets = formData.get('selectedTargets') as string;
     const paramsRaw = formData.get('params') as string;
 
     console.log('formData:', formData);
     console.log('file:', file);
     console.log('paramsRaw:', paramsRaw);
-    console.log('selectedTargetsRaw:', selectedTargetsRaw);
+    console.log('selectedTargets:', selectedTargets);
 
     // JSON 데이터를 파싱
     const params = JSON.parse(paramsRaw);
-    const selectedTargets = JSON.parse(selectedTargetsRaw);
 
     url = file;
 
