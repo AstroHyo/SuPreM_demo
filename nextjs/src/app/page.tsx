@@ -118,7 +118,7 @@ export default function CTImageProcessor() {
     const formData = new FormData();
     formData.append('file', newBlob.url);
     //formData.append('password', password);
-    formData.append('params', JSON.stringify(params));
+    formData.append('params', JSON.stringify([params]));
     formData.append('selectedTargets', JSON.stringify(selectedTargets));
 
     console.log('formData:', formData);
