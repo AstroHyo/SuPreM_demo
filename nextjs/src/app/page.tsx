@@ -121,6 +121,8 @@ export default function CTImageProcessor() {
     formData.append('params', JSON.stringify(params));
     formData.append('selectedTargets', JSON.stringify(selectedTargets));
 
+    console.log('formData:', formData);
+
     try {
       const response = await fetch('/api/process-ct', {
         method: 'POST',
