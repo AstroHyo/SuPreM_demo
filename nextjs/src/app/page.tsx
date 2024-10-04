@@ -29,7 +29,6 @@ const targets = [
 
 export default function CTImageProcessor() {
   const [file, setFile] = useState<File | null>(null);
-  const [password, setPassword] = useState('');
   const [selectedTargets, setSelectedTargets] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -101,7 +100,7 @@ export default function CTImageProcessor() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file || selectedTargets.length === 0 || !password) {
+    if (!file || selectedTargets.length === 0) {
       alert('Please fill in all required fields');
       return;
     }
@@ -113,12 +112,12 @@ export default function CTImageProcessor() {
     const newBlob = await upload(file.name, file, {
       access: 'public',
       handleUploadUrl: '/api/upload-ct',
-      clientPayload: JSON.stringify({ password }),
+      //clientPayload: JSON.stringify({ password }),
     });
 
     const formData = new FormData();
     formData.append('file', newBlob.url);
-    formData.append('password', password);
+    //formData.append('password', password);
     formData.append('selectedTargets', JSON.stringify(selectedTargets));
     formData.append('params', JSON.stringify(params));
 
