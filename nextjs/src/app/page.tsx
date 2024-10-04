@@ -154,135 +154,138 @@ export default function CTImageProcessor() {
   };
 
   return (
-    <div className="container mx-auto p-4 max-w-2xl bg-custom-bg bg-cover bg-center">
-      <h1 className="text-3xl font-bold mb-6">TotalSegmentator Demo</h1>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <Label htmlFor="file">CT Image File (.nii.gz)</Label>
-          <Input
-            id="file"
-            type="file"
-            onChange={handleFileChange}
-            accept=".nii.gz"
-            disabled={isProcessing}
-            required
-            className="h-13"
-          />
-          <p className="text-sm text-muted-foreground mt-1">
-            Maximum file size: 20 MB
-          </p>
-        </div>
+    <div className="min-h-screen bg-custom-bg bg-cover bg-center flex items-center justify-center">
+      <div className="bg-white bg-opacity-70 p-6 rounded-lg shadow-md max-w-2xl w-full">
 
-        <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="parameters">
-            <AccordionTrigger>Optional Parameters</AccordionTrigger>
-            <AccordionContent>
-              <div className="grid grid-cols-2 gap-4">
-                {Object.entries(params).map(([key, value]) => (
-                  <div key={key}>
-                    <Label htmlFor={key}>{key}</Label>
-                    <Input
-                      id={key}
-                      name={key}
-                      type="number"
-                      value={value}
-                      onChange={handleParamChange}
-                      disabled={isProcessing}
-                    />
-                  </div>
-                ))}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-
-        <div>
-          <Label>Target Selection</Label>
-          <div className="flex justify-between mb-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleSelectAllTargets}
+        <h1 className="text-3xl font-bold mb-6">TotalSegmentator Demo</h1>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <Label htmlFor="file">CT Image File (.nii.gz)</Label>
+            <Input
+              id="file"
+              type="file"
+              onChange={handleFileChange}
+              accept=".nii.gz"
               disabled={isProcessing}
-            >
-              Select All
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleDeselectAllTargets}
-              disabled={isProcessing}
-            >
-              Deselect All
-            </Button>
+              required
+              className="h-13"
+            />
+            <p className="text-sm text-muted-foreground mt-1">
+              Maximum file size: 20 MB
+            </p>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            {targets.map((target) => (
-              <div key={target} className="flex items-center space-x-2">
-                <Checkbox
-                  id={target}
-                  checked={selectedTargets.includes(target)}
-                  onCheckedChange={() => handleTargetChange(target)}
-                  disabled={isProcessing}
-                />
-                <label
-                  htmlFor={target}
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  {target}
-                </label>
-              </div>
-            ))}
-          </div>
-        </div>
 
-        <div>
-          <Label htmlFor="password">Password</Label>
-          <Input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={isProcessing}
-            required
-          />
-        </div>
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="parameters">
+              <AccordionTrigger>Optional Parameters</AccordionTrigger>
+              <AccordionContent>
+                <div className="grid grid-cols-2 gap-4">
+                  {Object.entries(params).map(([key, value]) => (
+                    <div key={key}>
+                      <Label htmlFor={key}>{key}</Label>
+                      <Input
+                        id={key}
+                        name={key}
+                        type="number"
+                        value={value}
+                        onChange={handleParamChange}
+                        disabled={isProcessing}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
 
-        <Button type="submit" className="w-full" disabled={isProcessing}>
-          {isProcessing ? 'Processing...' : 'Submit'}
-        </Button>
-      </form>
-
-      {isProcessing && (
-        <div className="mt-4">
-          <Progress value={progress} className="w-full" />
-          <p className="text-center mt-2">
-            {progress >= 100
-              ? 'Processing is taking longer than expected...'
-              : `${progress.toFixed(2)}% Complete`}
-          </p>
-        </div>
-      )}
-
-      {Object.keys(downloadLinks).length > 0 && (
-        <div className="mt-6">
-          <h2 className="text-xl font-semibold mb-2">Processing Complete</h2>
-          <p className="mb-4">
-            Your segmentation label files are ready for download.
-          </p>
-          <div className="space-y-2">
-            {Object.entries(downloadLinks).map(([fileName, url]) => (
-              <Button key={fileName} asChild className="w-full">
-                <a href={url} download={fileName}>
-                  Download {fileName}
-                </a>
+          <div>
+            <Label>Target Selection</Label>
+            <div className="flex justify-between mb-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleSelectAllTargets}
+                disabled={isProcessing}
+              >
+                Select All
               </Button>
-            ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleDeselectAllTargets}
+                disabled={isProcessing}
+              >
+                Deselect All
+              </Button>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {targets.map((target) => (
+                <div key={target} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={target}
+                    checked={selectedTargets.includes(target)}
+                    onCheckedChange={() => handleTargetChange(target)}
+                    disabled={isProcessing}
+                  />
+                  <label
+                    htmlFor={target}
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    {target}
+                  </label>
+                </div>
+              ))}
+            </div>
           </div>
+
+          <div>
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={isProcessing}
+              required
+            />
+          </div>
+
+          <Button type="submit" className="w-full" disabled={isProcessing}>
+            {isProcessing ? 'Processing...' : 'Submit'}
+          </Button>
+        </form>
+
+        {isProcessing && (
+          <div className="mt-4">
+            <Progress value={progress} className="w-full" />
+            <p className="text-center mt-2">
+              {progress >= 100
+                ? 'Processing is taking longer than expected...'
+                : `${progress.toFixed(2)}% Complete`}
+            </p>
+          </div>
+        )}
+
+        {Object.keys(downloadLinks).length > 0 && (
+          <div className="mt-6">
+            <h2 className="text-xl font-semibold mb-2">Processing Complete</h2>
+            <p className="mb-4">
+              Your segmentation label files are ready for download.
+            </p>
+            <div className="space-y-2">
+              {Object.entries(downloadLinks).map(([fileName, url]) => (
+                <Button key={fileName} asChild className="w-full">
+                  <a href={url} download={fileName}>
+                    Download {fileName}
+                  </a>
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
         </div>
-      )}
     </div>
   );
 }
