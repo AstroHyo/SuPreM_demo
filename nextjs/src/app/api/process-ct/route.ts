@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         input: {
-          params,
+          ...params,
           url: file,
           targets: JSON.parse(selectedTargets),
         },
