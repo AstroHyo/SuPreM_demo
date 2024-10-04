@@ -28,6 +28,10 @@ export async function POST(request: NextRequest) {
     const selectedTargets = formData.get('selectedTargets') as string;
     const params = JSON.parse(formData.get('params') as string);
 
+    console.log('file:', file);
+    console.log('params:', params);
+    console.log('selectedTargets:', selectedTargets);
+
     url = file;
 
     // Validate inputs
@@ -61,9 +65,6 @@ export async function POST(request: NextRequest) {
         },
       }),
     }).then((r) => r.json());
-
-    console.log('res:', res);
-    console.log('params:', params);
 
     if (res.error) {
       throw new Error(
