@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get('file') as string;
-    const selectedTargets = JSON.parse(formData.get('selectedTargets') as string);
+    const selectedTargets = formData.get('selectedTargets') as string;
     const params = JSON.parse(formData.get('params') as string);
 
     console.log('formData:', formData);
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const res = await fetch(`${process.env.RUNPOD_ENDPOINT}/runsync`, {
+    const response = await fetch(`${process.env.RUNPOD_ENDPOINT}/runsync`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -68,7 +68,11 @@ export async function POST(request: NextRequest) {
           targets: JSON.parse(selectedTargets),
         },
       }),
-    }).then((r) => r.json());
+    })
+
+    const text = await response.text();
+    console.log('runpod responded:', text);
+    const res = JSON.parse(text);
 
     if (res.error) {
       throw new Error(
