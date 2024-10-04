@@ -28,6 +28,7 @@ export async function POST(request: NextRequest) {
     const selectedTargets = formData.get('selectedTargets') as string;
     const params = JSON.parse(formData.get('params') as string);
 
+    console.log('formData:', formData);
     console.log('file:', file);
     console.log('params:', params);
     console.log('selectedTargets:', selectedTargets);
