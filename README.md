@@ -18,3 +18,9 @@ The goal of this project was to create a functional web demo that processes CT s
 1. **Model Resources**: AI model resources, including `inference.py`, were extracted from a Docker image hosted on Docker Hub.
 2. **Infrastructure**: Since the local development environment lacked the necessary hardware for running AI models, **RunPod** was used to access cloud GPUs and manage the necessary infrastructure for running the TotalSegmentator model.
 3. **Deployment**: The frontend was built with **Next.js** and hosted on **Vercel**. Vercel also manages other services like blob storage and APIs, ensuring smooth data handling and result generation.
+
+<p>
+  <div align="center">
+    <img width="70%" src="https://github.com/AstroHyo/SuPreM_demo/blob/main/nextjs/public/SuPreM_demo_Screenshot.png">
+  </div>
+</p>
