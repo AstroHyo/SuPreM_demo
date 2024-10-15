@@ -11,7 +11,7 @@ The goal of this project was to create a functional web demo that processes CT s
 ### Key Features:
 - **AI-Powered Segmentation**: Utilizes the TotalSegmentator AI model to perform segmentation on uploaded CT scan data.
 - **Cloud-Based GPU Execution**: Since the development environment lacked an NVIDIA GPU, I utilized **RunPod** for handling GPU resources, load balancing, and infrastructure for AI inference.
-- **Web Integration**: The website is hosted on **Vercel**, which manages the frontend, CDN, blob storage, and the necessary API connections for serving the segmentation results.
+- **Web Integration**: The website is hosted on **Vercel**, which manages CDN, blob storage, and the necessary API connections for serving the segmentation results.
 
 ## Technical Workflow
 
